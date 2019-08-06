@@ -54,14 +54,10 @@ module arm() {
 // downward curve connecting the arm
 rotate([90,270,90]) {
 
-	
 	rotate_extrude(angle = arm_angle,convexity = 2) {
 		translate([55 + pipe_y, 0, 0]) {
 			rotate([0,0,90]) { basic_shape(); }
 		}
-	}
-	translate([pipe_y, 40, 10]) {
-		// rotate([90,0,30]) { #cylinder(r=2.5,h=90); }
 	}
 
 	rotate_extrude(angle = arm_angle,convexity = 2) {
@@ -69,8 +65,6 @@ rotate([90,270,90]) {
 			// rotate([0,0,1220]) { square(size = [20, 20]); }
 		}
 	}
-
-
 
 	rotate([0,90, (90 - arm_angle) * -1]) {
 
@@ -93,8 +87,6 @@ rotate([90,270,90]) {
 	}
 
 
-
-
 }
 	
 	
@@ -108,7 +100,7 @@ module neck() {
 	// around neck part.
 	difference() { 
 		rotate_extrude(angle=180, convexity = 10) {
-			translate([neck_size_radius + curve_edge, 0, 0]) {
+			translate([neck_size_radius + curve_edge + neck_buffer, 0, 0]) {
 				basic_shape();
 			}
 		}
@@ -120,32 +112,39 @@ module neck() {
 
 module neck_with_bolt_parts() {
 
-	
 	neck();
 
 		/* Outside supports for the part1. */
 		for (i = [30 : 30 : 150]) {
 
-			/* make the hsape to "bound" the bolt supporst*/
-			intersection() {		
-				rotate_extrude(angle=180, convexity = 10) {
-					translate([neck_size_radius + curve_edge, 0, 0]) {
-						outer_basic();
-					}
-				}
-
-				/* Iterate through the bolt supports */
-				rotate([0,0,i]) {
-					translate([neck_size_radius + curve_edge + 36 ,0,-18]) {
-						difference() {
-							cylinder(r=10,h=80);
-							cylinder(r=2.5,h=40);
-						}
-
-					}
-				}
+			if (i == 90) {
+				echo("SKIPPING");
 			}
-		}
+
+			else {
+
+				/* make the shape to "bound" the bolt supports */
+				intersection() {		
+					rotate_extrude(angle=180, convexity = 10) {
+						translate([neck_size_radius + curve_edge + neck_buffer, 0, 0]) {
+							outer_basic();
+						}
+					}	
+
+					/* Iterate through the bolt supports */
+					rotate([0,0,i]) {
+						translate([neck_size_radius + curve_edge + neck_buffer + pipe_x -5 ,0,-18]) {	
+							difference() {
+								cylinder(r=6,h=80);
+								cylinder(r=2.5,h=40);
+							}
+						}
+					}
+				} // intersection
+
+			}
+		
+		} // end for
 
 
 
@@ -154,14 +153,18 @@ module neck_with_bolt_parts() {
 
 
 module left_arm() {
-	translate([-neck_size_radius - curve_edge - pipe_x + curve_edge - (curve_edge / 1.0),0,-55]) {
+	translate([(neck_size_radius + pipe_x + curve_edge + neck_buffer) * -1,
+				 0,
+				 -55]) {
 		arm();
 	}
 }
 
 
 module right_arm() {
-	translate([neck_size_radius + curve_edge  - curve_edge + (curve_edge / 1.0),0,-55]) {
+	translate([neck_size_radius + curve_edge + neck_buffer, 
+				0,
+				-55]) {
 		arm();
 	}
 }
@@ -170,7 +173,7 @@ module whole() {
 		neck_with_bolt_parts();
 		left_arm();
 		right_arm();
-		translate([0,0,0]) { pi_mount(); }
+		pi_mount(); 
 }
 
 
@@ -185,7 +188,7 @@ module pi_support() {
 
 module pi_mount() {
 
-translate([(pi_length / 2.0)* -1 ,73,0]) {
+translate([(pi_length / 2.0)* -1 ,neck_size_radius + neck_buffer + 5,0]) {
 
 	translate([0,0,0]) {
 		pi_support();
@@ -223,20 +226,26 @@ module part1() {
 		intersection() {
 			whole();
 			/* cut off the top half */
-			translate([half_offset * -1 ,half_offset * -1,0]) {	
+			translate([half_offset * -2 ,half_offset * -1,0]) {	
 	
-				cube(size=[half_offset * 2,
-							 half_offset * 2, pipe_y * 3]);
+				cube(size=[half_offset * 4,
+							 half_offset * 3, pipe_y * 3]);
 			}
 		} // end intersection
 
 	for (i = [30 : 30 : 150]) {
-		rotate([180,0,i]) {
-					translate([neck_size_radius + curve_edge + offset + 25,
+
+		if (i == 90) {
+
+		}
+		else { 
+			rotate([180,0,i]) {
+					translate([neck_size_radius + curve_edge + neck_buffer + pipe_x -5,
 								0, 
 								(h1 + 1) *-1 ]) {
 						 cylinder(r=6, h=h1-5);
 					}
+			}
 		}
 		
 	}
@@ -260,18 +269,21 @@ module part2() {
 		whole();
 
 		/* cut off the top half */
-		translate([half_offset * -1 ,half_offset * -1,curve_edge * -1 + (pipe_y / 2.0)]) {
-			cube(size=[half_offset * 2,
-						 half_offset * 2, pipe_y * 2]);
+		translate([half_offset * -2 ,
+				    half_offset * -2,
+				    curve_edge * -1 + (pipe_y / 2.0)]) {
+
+					cube(size=[half_offset * 4,
+								 half_offset * 4, pipe_y * 2]);
 		}
 
 		/* Cut off anything below the flat part on the bottom */
 		/* honestly i dont know what this -5 is ?) */
-		translate([half_offset * -1,
-					half_offset * -2,
+		translate([half_offset * -1.5,
+					half_offset * -1.5,
 					(box2_height * -1 ) - curve_edge - 1 ]) {
 
-			#cube(size=[half_offset * 2,
+			cube(size=[half_offset * 3,
 						 half_offset * 3, box2_height]);
 		}
 
@@ -300,11 +312,11 @@ module part3() {
 }
 
 translate([0,0,0]) {
-//	color("green") { part1(); };
+//d	color("green") { part1(); };
 }
 
 translate([0,0,-30]) {
-	color("blue") { part2(); };
+  color("blue") { part2(); };
 }
 
 translate([0,0,-60]) {

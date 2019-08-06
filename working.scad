@@ -1,12 +1,14 @@
 
 $fn=36;
-
 neck_circumference = 430;
 
 // Size in mm.
-neck_size_radius= neck_circumference  / (2 * 3.1417);
-
+neck_size_radius = neck_circumference  / (2 * 3.1417);
 neck_buffer=20;
+
+collar_radius =  neck_size_radius + neck_buffer;
+
+
 pipe_x=35; 
 pipe_y=20;
 curve_edge=5;
@@ -22,6 +24,15 @@ bolt_buffer=2;
 
 pi_width = 23;
 pi_length = 58;
+
+// 220 x 220 mm.
+ender_bed = 220;
+
+total_curve_radius = collar_radius + pipe_x + (curve_edge * 2);
+
+
+connection_height = 8;
+connection_width = 18;
 
 
 module outer_basic() {
@@ -47,7 +58,32 @@ module basic_shape() {
 
 }
 
+module half_connector() {
 
+	difference() { 
+		cube(size=[8,connection_width,connection_height]);
+
+		// offset to middle of cube
+		translate([connection_width / 2.0 - connection_width + 5,
+					connection_width / 2.0,
+					0]) {
+	
+			translate([2,5,connection_height / 2.0]) {
+				rotate([0,90,0]) {
+					cylinder(r=2.5, h=12);
+				}
+			}
+
+			translate([2,-5,connection_height / 2.0]) {
+				rotate([0,90,0]) {
+					cylinder(r=2.5, h=12);
+				}
+			}
+
+		}
+
+	}
+}
 
 module arm() {
 
@@ -96,6 +132,8 @@ rotate([90,270,90]) {
 
 
 module neck() {
+	
+	error = 0.1;
 
 	// around neck part.
 	difference() { 
@@ -104,6 +142,21 @@ module neck() {
 				basic_shape();
 			}
 		}
+	}
+
+
+	// The part that joins left and right on my tiny 3d printer.
+
+	translate([(connection_height / 2.0) * -1,
+				neck_size_radius + pipe_x - 4,
+				-3]) {
+		half_connector();
+	}
+
+	translate([(connection_height / 2.0) * -1,
+				neck_size_radius + pipe_x - 4, 
+				pipe_y - connection_height + error]) {
+		half_connector();
 	}
 
 }
@@ -215,7 +268,7 @@ translate([(pi_length / 2.0)* -1 ,neck_size_radius + neck_buffer + 5,0]) {
 /* This is the part that sits on top of part1 */
 module part1() {
 
-	offset =12;
+	offset = 12;
 	error = 2;
 	box2_height = 200;
 	h1= 50;
@@ -225,8 +278,11 @@ module part1() {
 	difference() {
 		intersection() {
 			whole();
+
 			/* cut off the top half */
-			translate([half_offset * -2 ,half_offset * -1,0]) {	
+			translate([half_offset * -2,
+						half_offset * -1,
+						(pipe_y / 2.0)]) {	
 	
 				cube(size=[half_offset * 4,
 							 half_offset * 3, pipe_y * 3]);
@@ -242,8 +298,8 @@ module part1() {
 			rotate([180,0,i]) {
 					translate([neck_size_radius + curve_edge + neck_buffer + pipe_x -5,
 								0, 
-								(h1 + 1) *-1 ]) {
-						 cylinder(r=6, h=h1-5);
+								(h1 + 15) * -1 ]) {
+						 cylinder(r=5, h=50);
 					}
 			}
 		}
@@ -269,9 +325,9 @@ module part2() {
 		whole();
 
 		/* cut off the top half */
-		translate([half_offset * -2 ,
-				    half_offset * -2,
-				    curve_edge * -1 + (pipe_y / 2.0)]) {
+		translate([half_offset * -2,
+					half_offset * -1,
+					(pipe_y / 2.0)]) {	
 
 					cube(size=[half_offset * 4,
 								 half_offset * 4, pipe_y * 2]);
@@ -311,18 +367,114 @@ module part3() {
 	}
 }
 
-translate([0,0,0]) {
-//d	color("green") { part1(); };
+
+module part1a() {
+
+	difference() {
+		part1();
+
+		// WORKING collar_radius
+		translate([0,(total_curve_radius / 2) * -1,-10]) { 
+			cube(size=[total_curve_radius,
+						 total_curve_radius* 2,60]);
+		}
+	}
+
+
 }
 
-translate([0,0,-30]) {
-  color("blue") { part2(); };
+module part1b() {
+	
+	error = 5;
+
+	difference() {
+		part1();
+
+		// WORKING collar_radius
+		translate([(total_curve_radius  * -1) - error ,(total_curve_radius / 2) * -1,-10]) { 
+			cube(size=[total_curve_radius + error ,
+						 total_curve_radius* 2,60]);
+		}
+	}
+
 }
+
+
+module part2a() {
+	
+
+	difference() {
+		part2();
+
+		// WORKING collar_radius
+		translate([0,(total_curve_radius / 2) * -1,-10]) { 
+			cube(size=[total_curve_radius,
+						 total_curve_radius* 2,30]);
+		}
+	}
+
+}
+
+module part2b() {
+
+
+	difference() {
+		part2();
+
+		// WORKING collar_radius
+		translate([total_curve_radius * -1 ,(total_curve_radius / 2) * -1,-10]) { 
+			cube(size=[total_curve_radius,
+						 total_curve_radius* 2,30]);
+		}
+	}
+
+}
+
+
+module ender_bed() {
+	cube(size=[220,220,5]);
+}
+
+translate([0,0,10]) {
+ color("green") { 
+		// part1(); 
+
+	translate([-5,0,0]) {
+		part1a(); 
+	}
+
+	translate([5,0,0]) {
+		part1b(); 
+	}
+
+ };
+}
+
+translate([0,0,0]) {
+	color("blue") { 
+		//part2();
+
+	translate([-5,0,0]) {
+		part2a(); 
+	}
+
+	translate([5,0,0]) {
+		part2b(); 
+	}
+ 
+	};
+
+}
+
+
 
 translate([0,0,-60]) {
 	//color("black") { part3(); };
 }
 
+translate([-60,-70,-40]) {
+	//ender_bed();
+}
 
 
 // whole();

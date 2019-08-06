@@ -1,13 +1,16 @@
 
 $fn=36;
 
-// Size in mm.
-neck_size_radius=140;
-curve_edge=20;
+neck_circumference = 430;
 
-neck_buffer=10;
-pipe_x=25; 
-pipe_y=25;
+// Size in mm.
+neck_size_radius= neck_circumference  / (2 * 3.1417);
+
+neck_buffer=20;
+pipe_x=35; 
+pipe_y=20;
+curve_edge=5;
+
 
 pipe_wall_thickness=2.5;
 
@@ -16,6 +19,9 @@ arm_length=140;
 
 bolt_size=3;
 bolt_buffer=2;
+
+pi_width = 23;
+pi_length = 58;
 
 
 module outer_basic() {
@@ -164,7 +170,7 @@ module whole() {
 		neck_with_bolt_parts();
 		left_arm();
 		right_arm();
-		translate([0,156,-16]) { pi_mount(); }
+		translate([0,0,0]) { pi_mount(); }
 }
 
 
@@ -179,21 +185,24 @@ module pi_support() {
 
 module pi_mount() {
 
+translate([(pi_length / 2.0)* -1 ,73,0]) {
+
 	translate([0,0,0]) {
 		pi_support();
 	}
 
-	translate([58,23,0]) {
+	translate([pi_length,pi_width,0]) {
 		pi_support();
 	}
 
-	translate([58,0,0]) {
+	translate([pi_length,0,0]) {
 		pi_support();
 	}
 
-	translate([0,23,0]) {
+	translate([0,pi_width,0]) {
 		pi_support();
 	}
+}
 
 
 }
@@ -202,6 +211,7 @@ module pi_mount() {
 
 /* This is the part that sits on top of part1 */
 module part1() {
+
 	offset =12;
 	error = 2;
 	box2_height = 200;
@@ -241,7 +251,7 @@ module part1() {
 /* its the part that contacts the back of the neck around to the shoulder */
 module part2() {
 
-	error = 2;
+	error = 1;
 	box2_height = 200;
 
 	half_offset = neck_size_radius + pipe_x  + (curve_edge * 2) + error;
@@ -250,7 +260,7 @@ module part2() {
 		whole();
 
 		/* cut off the top half */
-		translate([half_offset * -1 ,half_offset * -1,0]) {
+		translate([half_offset * -1 ,half_offset * -1,curve_edge * -1 + (pipe_y / 2.0)]) {
 			cube(size=[half_offset * 2,
 						 half_offset * 2, pipe_y * 2]);
 		}
@@ -258,11 +268,11 @@ module part2() {
 		/* Cut off anything below the flat part on the bottom */
 		/* honestly i dont know what this -5 is ?) */
 		translate([half_offset * -1,
-					half_offset * -1,
-					(box2_height + pipe_y - 5) * -1]) {
+					half_offset * -2,
+					(box2_height * -1 ) - curve_edge - 1 ]) {
 
-			cube(size=[half_offset * 2,
-						 half_offset * 2, box2_height]);
+			#cube(size=[half_offset * 2,
+						 half_offset * 3, box2_height]);
 		}
 
 	}
@@ -303,4 +313,4 @@ translate([0,0,-60]) {
 
 
 
-//  whole();
+// whole();

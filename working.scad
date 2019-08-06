@@ -14,6 +14,10 @@ pipe_wall_thickness=2.5;
 arm_angle=65;
 arm_length=140;
 
+bolt_size=3;
+bolt_buffer=2;
+
+
 module outer_basic() {
 			minkowski() {
 			 square(size=[pipe_x,pipe_y]);
@@ -37,33 +41,30 @@ module basic_shape() {
 
 }
 
-module little_wall() {
 
-	rotate_extrude(angle = 3,convexity = 2) {
-		translate([neck_size_radius - (pipe_x * 2) - (curve_edge / 2.0), curve_edge, 0]) {
-			rotate([0,0,180]) { 
-		
-				difference() {
-					scale([1.0,1.0,1.0]) { inner_basic(); }
-					scale([0.9,0.9,0.9]) { inner_basic(); }
-				} 
-
-				}
-		}
-	}
-
-}
 
 module arm() {
 
 // downward curve connecting the arm
 rotate([90,270,90]) {
+
 	
 	rotate_extrude(angle = arm_angle,convexity = 2) {
 		translate([55 + pipe_y, 0, 0]) {
 			rotate([0,0,90]) { basic_shape(); }
 		}
 	}
+	translate([pipe_y, 40, 10]) {
+		// rotate([90,0,30]) { #cylinder(r=2.5,h=90); }
+	}
+
+	rotate_extrude(angle = arm_angle,convexity = 2) {
+		translate([30 + pipe_y, 0, 0]) {
+			// rotate([0,0,1220]) { square(size = [20, 20]); }
+		}
+	}
+
+
 
 	rotate([0,90, (90 - arm_angle) * -1]) {
 
@@ -85,10 +86,15 @@ rotate([90,270,90]) {
 		}
 	}
 
+
+
+
 }
 	
 	
 }
+
+
 
 
 module neck() {
@@ -101,6 +107,42 @@ module neck() {
 			}
 		}
 	}
+
+}
+
+
+
+module neck_with_bolt_parts() {
+
+	
+	neck();
+
+		/* Outside supports for the part1. */
+		for (i = [30 : 30 : 150]) {
+
+			/* make the hsape to "bound" the bolt supporst*/
+			intersection() {		
+				rotate_extrude(angle=180, convexity = 10) {
+					translate([neck_size_radius + curve_edge, 0, 0]) {
+						outer_basic();
+					}
+				}
+
+				/* Iterate through the bolt supports */
+				rotate([0,0,i]) {
+					translate([neck_size_radius + curve_edge + 36 ,0,-18]) {
+						difference() {
+							cylinder(r=10,h=80);
+							cylinder(r=2.5,h=40);
+						}
+
+					}
+				}
+			}
+		}
+
+
+
 
 }
 
@@ -119,45 +161,16 @@ module right_arm() {
 }
 
 module whole() {
-		neck();
+		neck_with_bolt_parts();
 		left_arm();
 		right_arm();
-
 		translate([0,156,-16]) { pi_mount(); }
-}
-
-module part1() {
-
-		box_height = pipe_x * 2;
-
-difference() {
-		difference() {
-			whole();
-			translate([-neck_size_radius*2,-neck_size_radius,0]) {
-				cube(size=[neck_size_radius*4,neck_size_radius*3,box_height]);	
-			}
-		}
-
-		translate([-neck_size_radius*2,-neck_size_radius * 1.5,0- ((box_height *4) + (pipe_y / 2) + (curve_edge / 2.0) - 2.1)]) {
-				cube(size=[neck_size_radius*4,neck_size_radius*4,box_height* 4]);	
-		}
-}
-
-	// binding walls
-	rotate([0,0,150]) {
-		translate([102,0,0]) {
-			little_wall();
-		}
-	}
-
 }
 
 
 
 
 module pi_support() {
-
-
 	difference() {
 		cylinder(h=5, r=3.5, center=true);
 		cylinder(h=6, r=2.5, center=true);
@@ -185,5 +198,109 @@ module pi_mount() {
 
 }
 
-part1();
-// whole();
+
+
+/* This is the part that sits on top of part1 */
+module part1() {
+	offset =12;
+	error = 2;
+	box2_height = 200;
+	h1= 50;
+
+	half_offset = neck_size_radius + pipe_x  + (curve_edge * 2) + error;
+ 
+	difference() {
+		intersection() {
+			whole();
+			/* cut off the top half */
+			translate([half_offset * -1 ,half_offset * -1,0]) {	
+	
+				cube(size=[half_offset * 2,
+							 half_offset * 2, pipe_y * 3]);
+			}
+		} // end intersection
+
+	for (i = [30 : 30 : 150]) {
+		rotate([180,0,i]) {
+					translate([neck_size_radius + curve_edge + offset + 25,
+								0, 
+								(h1 + 1) *-1 ]) {
+						 cylinder(r=6, h=h1-5);
+					}
+		}
+		
+	}
+
+
+	}
+
+}
+
+
+/* This is the first part to print */
+/* its the part that contacts the back of the neck around to the shoulder */
+module part2() {
+
+	error = 2;
+	box2_height = 200;
+
+	half_offset = neck_size_radius + pipe_x  + (curve_edge * 2) + error;
+ 
+	difference() {
+		whole();
+
+		/* cut off the top half */
+		translate([half_offset * -1 ,half_offset * -1,0]) {
+			cube(size=[half_offset * 2,
+						 half_offset * 2, pipe_y * 2]);
+		}
+
+		/* Cut off anything below the flat part on the bottom */
+		/* honestly i dont know what this -5 is ?) */
+		translate([half_offset * -1,
+					half_offset * -1,
+					(box2_height + pipe_y - 5) * -1]) {
+
+			cube(size=[half_offset * 2,
+						 half_offset * 2, box2_height]);
+		}
+
+	}
+}
+
+module part3() {
+
+
+	error = 2;
+	box2_height = 200;
+
+	half_offset = neck_size_radius + pipe_x  + (curve_edge * 2) + error;
+ 
+	difference() {
+		whole();
+
+		/* cut off the top half */
+		translate([half_offset * -1 ,half_offset * -1,( pipe_y - 5) * -1 - 0.01]) {
+			cube(size=[half_offset * 2,
+						 half_offset * 2, pipe_y * 3]);
+		}
+
+
+	}
+}
+
+translate([0,0,0]) {
+//	color("green") { part1(); };
+}
+
+translate([0,0,-30]) {
+	color("blue") { part2(); };
+}
+
+translate([0,0,-60]) {
+	//color("black") { part3(); };
+}
+
+
+
+//  whole();

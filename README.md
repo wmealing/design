@@ -3,7 +3,7 @@
 <!-- PROJECT LOGO -->
 <br />
 
-<h1> The C O ⅃ L A R </h1>
+<h1> The C O ⅃ L A R - hardware </h1>
 
 [![Build Status](https://travis-ci.org/wmealing/loader.svg?branch=master)](https://travis-ci.org/wmealing/loader)
 

@@ -61,13 +61,16 @@ module basic_shape() {
 
 module little_box() {
 
-	difference() 
+	difference() {
 			minkowski() {
 			 square(size=[10,10]);
 			 circle(r=3);
 			}
 
-		circle(r=5);
+                        translate([5,5,5]) {
+                  	                   circle(r=2.5);
+                        }
+                                           
 	}
 	
 

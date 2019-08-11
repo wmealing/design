@@ -91,7 +91,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Your Name - [@wademealing](https://twitter.com/wademealing) -
 
-Project Link: [https://github.com/wmealing/loader](https://github.com/wmealing/loader)
+Project Link: [https://github.com/wmealing/loader](https://github.com/wmealing/design)
 
 
 

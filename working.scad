@@ -1,4 +1,4 @@
-
+ 
 $fn=36;
 neck_circumference = 430;
 
@@ -58,6 +58,21 @@ module basic_shape() {
 
 }
 
+
+module little_box() {
+
+	difference() 
+			minkowski() {
+			 square(size=[10,10]);
+			 circle(r=3);
+			}
+
+		circle(r=5);
+	}
+	
+
+}
+
 module half_connector() {
 
 	difference() { 
@@ -87,6 +102,11 @@ module half_connector() {
 
 module arm() {
 
+	connecting_block_width=10;
+	connecting_block_length=25;
+
+	error = 2;
+
 // downward curve connecting the arm
 rotate([90,270,90]) {
 
@@ -98,13 +118,13 @@ rotate([90,270,90]) {
 
 	rotate_extrude(angle = arm_angle,convexity = 2) {
 		translate([30 + pipe_y, 0, 0]) {
-			// rotate([0,0,1220]) { square(size = [20, 20]); }
+			//rotate([0,0,1220]) { square(size = [20, 20]); }
 		}
 	}
 
 	rotate([0,90, (90 - arm_angle) * -1]) {
-
-		translate([-pipe_x,55,-arm_length]) {
+ 
+		translate([-pipe_x,55,-arm_length +1]) {
 			linear_extrude(height = arm_length, center = false, convexity = 10, twist = 0) {
 					basic_shape();
 			}
@@ -116,11 +136,23 @@ rotate([90,270,90]) {
 	// end cap on the arm.
 	rotate([0,90, (90 - arm_angle) * -1]) {	
 			translate([-pipe_x,55,-arm_length - 2]) {
-			linear_extrude(height = 2.5, center = false, convexity = 10, twist = 0) {
+			linear_extrude(height = 2.6, center = false, convexity = 10, twist = 0) {
 								outer_basic();
 			}
 		}
 	}
+
+
+	/* Connecting part between 2 and 3 */
+	rotate([0,0,47]) {
+		rotate_extrude(angle = 20) {
+			translate([91, (pipe_x / 2.0) - curve_edge, 0]) {
+				rotate([0,0,90]) { little_box(); }
+			}
+		}
+
+	}
+	
 
 
 }
@@ -186,7 +218,10 @@ module neck_with_bolt_parts() {
 
 					/* Iterate through the bolt supports */
 					rotate([0,0,i]) {
-						translate([neck_size_radius + curve_edge + neck_buffer + pipe_x -5 ,0,-18]) {	
+
+						translate([neck_size_radius + curve_edge + neck_buffer + pipe_x -5 ,
+									0,
+									-18]) {	
 							difference() {
 								cylinder(r=6,h=80);
 								cylinder(r=2.5,h=40);
@@ -312,6 +347,43 @@ module part1() {
 }
 
 
+
+
+module part1a() {
+
+	error = 10;
+
+	difference() {
+		part1();
+
+		// WORKING collar_radius
+		translate([0,(total_curve_radius / 2) * -1,-10]) { 
+			cube(size=[total_curve_radius + error,
+						 total_curve_radius* 2,60]);
+		}
+	}
+
+
+}
+
+module part1b() {
+	
+	error = 10;
+
+	difference() {
+		part1();
+
+		// WORKING collar_radius
+		translate([(total_curve_radius  * -1) - error ,(total_curve_radius / 2) * -1,-10]){ 
+			cube(size=[total_curve_radius + error ,
+						 total_curve_radius* 2,60]);
+		}
+	}
+
+}
+
+
+
 /* This is the first part to print */
 /* its the part that contacts the back of the neck around to the shoulder */
 module part2() {
@@ -337,7 +409,7 @@ module part2() {
 		/* honestly i dont know what this -5 is ?) */
 		translate([half_offset * -1.5,
 					half_offset * -1.5,
-					(box2_height * -1 ) - curve_edge - 1 ]) {
+					(box2_height * -1 ) - curve_edge ]) {
 
 			cube(size=[half_offset * 3,
 						 half_offset * 3, box2_height]);
@@ -346,69 +418,17 @@ module part2() {
 	}
 }
 
-module part3() {
-
-
-	error = 2;
-	box2_height = 200;
-
-	half_offset = neck_size_radius + pipe_x  + (curve_edge * 2) + error;
- 
-	difference() {
-		whole();
-
-		/* cut off the top half */
-		translate([half_offset * -1 ,half_offset * -1,( pipe_y - 5) * -1 - 0.01]) {
-			cube(size=[half_offset * 2,
-						 half_offset * 2, pipe_y * 3]);
-		}
-
-
-	}
-}
-
-
-module part1a() {
-
-	difference() {
-		part1();
-
-		// WORKING collar_radius
-		translate([0,(total_curve_radius / 2) * -1,-10]) { 
-			cube(size=[total_curve_radius,
-						 total_curve_radius* 2,60]);
-		}
-	}
-
-
-}
-
-module part1b() {
-	
-	error = 5;
-
-	difference() {
-		part1();
-
-		// WORKING collar_radius
-		translate([(total_curve_radius  * -1) - error ,(total_curve_radius / 2) * -1,-10]) { 
-			cube(size=[total_curve_radius + error ,
-						 total_curve_radius* 2,60]);
-		}
-	}
-
-}
-
 
 module part2a() {
 	
+	error = 10;
 
 	difference() {
 		part2();
 
 		// WORKING collar_radius
 		translate([0,(total_curve_radius / 2) * -1,-10]) { 
-			cube(size=[total_curve_radius,
+			cube(size=[total_curve_radius + error,
 						 total_curve_radius* 2,30]);
 		}
 	}
@@ -417,64 +437,153 @@ module part2a() {
 
 module part2b() {
 
+	error = 10;
 
 	difference() {
 		part2();
 
 		// WORKING collar_radius
-		translate([total_curve_radius * -1 ,(total_curve_radius / 2) * -1,-10]) { 
-			cube(size=[total_curve_radius,
-						 total_curve_radius* 2,30]);
+		translate([total_curve_radius * -1 - error ,(total_curve_radius / 2) * -1,-10]) { 
+			cube(size=[total_curve_radius + error,
+						 total_curve_radius* 2, 30]);
 		}
 	}
 
 }
 
 
+module part3() {
+
+
+	error = 1;
+	box2_height = 200;
+
+	half_offset = neck_size_radius + pipe_x  + (curve_edge * 2) + error;
+ 
+	intersection() {
+
+		whole();
+
+		/* Cut off anything below the flat part on the bottom */
+		/* honestly i dont know what this -5 is ?) */
+		translate([half_offset * -1.5,
+					half_offset * -1.5,
+					(box2_height * -1 ) - curve_edge - 0.01 ]) {
+
+			cube(size=[half_offset * 3,
+						 half_offset * 3, box2_height]);
+		}
+
+	}
+
+
+}
+
+
+module part3a() {
+	
+	block=100;
+
+	difference() {
+	 	part3();
+
+		/* cut off the top half */
+		translate([0,-300,-200]) {
+				cube(size=[block * 2,
+						 block * 3, block * 2]);
+		}
+
+	}
+}
+
+module part3b() {
+
+	block=100;
+
+	difference() {
+		part3();
+
+			/* cut off the top half */
+		translate([-200,-300,-200]) {
+				cube(size=[block * 2,
+					 block * 3, block * 2]);
+		}
+	}
+}
+
 module ender_bed() {
 	cube(size=[220,220,5]);
 }
 
-translate([0,0,10]) {
- color("green") { 
-		// part1(); 
 
-	translate([-5,0,0]) {
-		part1a(); 
+module part_green() {
+
+	translate([0,0,10]) {
+ 		color("green") { 	
+
+			translate([-5,0,0]) {	
+				part1a(); 
+			}
+
+			translate([5,0,0]) {
+				part1b(); 
+			}
+
+ 		};
 	}
-
-	translate([5,0,0]) {
-		part1b(); 
-	}
-
- };
 }
+
+
+
+
+module part_blue() {
+
+	translate([0,0,0]) {
+		color("blue") { 
+	
+			translate([0,0,0]) {
+				part2a(); 
+			}
+	
+			translate([0,0,0]) {
+				part2b(); 
+			}
+
+		};
+
+	}
+}
+
+module part_black() {
 
 translate([0,0,0]) {
-	color("blue") { 
-		//part2();
-
-	translate([-5,0,0]) {
-		part2a(); 
-	}
-
-	translate([5,0,0]) {
-		part2b(); 
-	}
- 
-	};
+	color("grey") { part3(); };
+}
 
 }
 
 
+printable = 1;
 
-translate([0,0,-60]) {
-	//color("black") { part3(); };
+if (printable == 1) {
+	// rotate([0,180,0]) { part1a(); }
+	// rotate([0,180,0]) { part1b(); }
+	// part2a();
+	// part2b();
+	//rotate([25,0,0]) { part3a(); }
+	//rotate([25,0,0]) { part3b(); }
+
+}
+else {
+	// part_green();
+	// part_blue();
+	// part_black();
 }
 
-translate([-60,-70,-40]) {
-	//ender_bed();
-}
+
+// part1();
+part2();
+part3();
 
 
-// whole();
+//whole();

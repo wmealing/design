@@ -569,7 +569,7 @@ translate([0,0,0]) {
 printable = 1;
 
 if (printable == 1) {
-	// rotate([0,180,0]) { part1a(); }
+	rotate([0,180,0]) { part1a(); }
 	// rotate([0,180,0]) { part1b(); }
 	// part2a();
 	// part2b();
@@ -584,9 +584,9 @@ else {
 }
 
 
-part1();
-part2();
-part3();
+// part1();
+// part2();
+// part3();
 
 
 //whole();

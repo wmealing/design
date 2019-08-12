@@ -45,13 +45,19 @@ This section should list any major frameworks that you built your project using.
 
 ### Prerequisites
 
-Rasberry pi zero
-3d printer. Currently designed on ender 3.
+- Rasberry pi zero
+- 3d printer. Currently designed on ender 3.
+- 6 x 18650 batteries.
+- Approximately 2m of wiring.
+- wired bat.
+- 12 x M2.5 - ~12mm bolts and nuts.
+## Building
 
-
-
-## Usage
-
+3d print the parts in the system any way that fits on your system.
+- Put the pi in the fitting tray
+- put the audio hat on the pi.
+- Connect the power to the pi.
+- 
 
 <!-- ROADMAP -->
 ## Roadmap

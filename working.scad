@@ -31,8 +31,9 @@ ender_bed = 220;
 total_curve_radius = collar_radius + pipe_x + (curve_edge * 2);
 
 
-connection_height = 8;
+connection_height = 10;
 connection_width = 18;
+connection_depth = 18;
 
 
 module outer_basic() {
@@ -76,10 +77,11 @@ module little_box() {
 
 }
 
-module half_connector() {
+module half_connector_v1() {
 
 	difference() { 
-		cube(size=[8,connection_width,connection_height]);
+		#cube(size=[connection_depth,connection_width,connection_height]);
+		cylinder(r=2.5, h=connection_depth + 8);
 
 		// offset to middle of cube
 		translate([connection_width / 2.0 - connection_width + 5,
@@ -88,13 +90,14 @@ module half_connector() {
 	
 			translate([2,5,connection_height / 2.0]) {
 				rotate([0,90,0]) {
-					cylinder(r=2.5, h=12);
+					cylinder(r=2.5, h=22);
 				}
 			}
 
 			translate([2,-5,connection_height / 2.0]) {
 				rotate([0,90,0]) {
-					cylinder(r=2.5, h=12);
+					// #WOT 
+					cylinder(r=2.5, h=connection_depth + 8);
 				}
 			}
 
@@ -102,6 +105,53 @@ module half_connector() {
 
 	}
 }
+
+module half_connector_v2() {
+
+	difference() {
+		double_bolt();
+
+		translate([-1,0,0]) {
+
+			rotate([0,90,0]) {
+				#cylinder(r=2.5,h=connection_width + 2);
+			}
+
+		}
+
+		translate([-1,connection_height - 2,0]) {
+
+			rotate([0,90,0]) {
+				#cylinder(r=2.5,h=connection_width + 2);
+			}
+
+		}
+
+
+	}
+
+}
+
+module double_bolt() {
+
+//	 half_connector();	
+	rotate([0,90,0]) {
+
+		
+		translate([0,0,0]) {
+			cylinder(r=connection_height/2+ 2,h=connection_width);
+		}
+
+		translate([0,connection_height - 2,0]) {
+			cylinder(r=connection_height/2 + 2,h=connection_width);
+		}
+
+	}
+
+
+	
+}
+
 
 module arm() {
 
@@ -169,6 +219,10 @@ rotate([90,270,90]) {
 module neck() {
 	
 	error = 0.1;
+	
+	inner_radius = neck_size_radius + curve_edge + neck_buffer;
+	outer_radius = inner_radius + (curve_edge * 2) + pipe_x;
+	
 
 	// around neck part.
 	difference() { 
@@ -180,18 +234,11 @@ module neck() {
 	}
 
 
-	// The part that joins left and right on my tiny 3d printer.
-
-	translate([(connection_height / 2.0) * -1,
-				neck_size_radius + pipe_x - 4,
-				-3]) {
-		half_connector();
-	}
-
-	translate([(connection_height / 2.0) * -1,
-				neck_size_radius + pipe_x - 4, 
-				pipe_y - connection_height + error]) {
-		half_connector();
+	
+	translate([(connection_depth  / -2.0),
+				outer_radius -1, 
+				( pipe_y  / 2.0 )- curve_edge + 1.2]) {
+		rotate([90,0,0]) { half_connector_v2(); }
 	}
 
 }
@@ -303,7 +350,7 @@ translate([(pi_length / 2.0)* -1 ,neck_size_radius + neck_buffer + 5,0]) {
 
 
 
-/* This is the part that sits on top of part1 */
+/* This is the part that sits on top of part2 */
 module part1() {
 
 	offset = 12;

@@ -30,6 +30,10 @@ ender_bed = 220;
 
 total_curve_radius = collar_radius + pipe_x + (curve_edge * 2);
 
+	
+inner_radius = neck_size_radius + curve_edge + neck_buffer;
+outer_radius = inner_radius + (curve_edge * 2) + pipe_x;
+	
 
 connection_height = 10;
 connection_width = 18;
@@ -219,10 +223,7 @@ rotate([90,270,90]) {
 module neck() {
 	
 	error = 0.1;
-	
-	inner_radius = neck_size_radius + curve_edge + neck_buffer;
-	outer_radius = inner_radius + (curve_edge * 2) + pipe_x;
-	
+
 
 	// around neck part.
 	difference() { 
@@ -243,6 +244,37 @@ module neck() {
 
 }
 
+module neck_with_insets() {
+
+
+	difference() {
+
+		neck_with_bolt_parts();
+
+		/* Outside supports for the part1. */
+		for (i = [30 : 30 : 150]) {
+
+			if (i == 90) {
+			// Dont make center hole.
+			}
+			else {
+
+			rotate([0,0,i]) {
+
+				translate([outer_radius - 15, 
+										0,
+										-10]) {	
+					cylinder(r=6,h=15);
+				} // end translate.
+			}
+
+			} // end rotate
+
+		} // end for
+
+	} // end difference
+
+}
 
 
 module neck_with_bolt_parts() {
@@ -308,7 +340,7 @@ module right_arm() {
 }
 
 module whole() {
-		neck_with_bolt_parts();
+		neck_with_insets();
 		left_arm();
 		right_arm();
 		pi_mount(); 
@@ -477,8 +509,8 @@ module part2a() {
 		part2();
 
 		// WORKING collar_radius
-		translate([0,(total_curve_radius / 2) * -1,-10]) { 
-			cube(size=[total_curve_radius + error,
+		translate([0,(total_curve_radius - 30) * -1,-10]) { 
+			#cube(size=[total_curve_radius + error,
 						 total_curve_radius* 2,30]);
 		}
 	}
@@ -617,8 +649,8 @@ printable = 1;
 
 if (printable == 1) {
 	//rotate([0,180,0]) { part1a(); }
-	rotate([0,180,0]) { part1b(); }
-	// part2a();
+	//rotate([0,180,0]) { part1b(); }
+	part2a();
 	// part2b();
 	//rotate([25,0,0]) { part3a(); }
 	//rotate([25,0,0]) { part3b(); }

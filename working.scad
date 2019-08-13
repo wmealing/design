@@ -63,23 +63,10 @@ module basic_shape() {
 
 }
 
-
-module little_box() {
-
-	difference() {
-			minkowski() {
-			 square(size=[10,10]);
-			 circle(r=3);
-			}
-
-                        translate([5,5,5]) {
-                  	                   circle(r=2.5);
-                        }
-                                           
-	}
-	
-
+module wall() {
+	square(size=[5,18]);
 }
+
 
 
 module half_connector_v2() {
@@ -128,8 +115,27 @@ module double_bolt() {
 	
 }
 
-
 module arm() {
+	arm_with_bolt_holes();
+}
+
+module arm_with_bolt_holes() {
+
+	difference() {
+		arm_design();
+
+		translate([45,-30,55]) {
+			rotate([0,90+ 180,0]) {
+				cylinder(r=2.5,h=55);
+			}
+		}
+
+	}
+
+}
+
+
+module arm_design() {
 
 	connecting_block_width=10;
 	connecting_block_length=25;
@@ -159,23 +165,12 @@ rotate([90,270,90]) {
 	// end cap on the arm.
 	rotate([0,90, (90 - arm_angle) * -1]) {	
 			translate([-pipe_x,55,-arm_length - 2]) {
-			#linear_extrude(height = 2.6, center = false, convexity = 10, twist = 0) {
+			linear_extrude(height = 2.6, center = false, convexity = 10, twist = 0) {
 								outer_basic();
 			}
 		}
 	}
 
-
-	/* Connecting part between 2 and 3 */
-	rotate([0,0,12]) {
-		rotate_extrude(angle = 35) {
-			translate([67, (pipe_x / 2.0) - curve_edge , 0]) {
-				rotate([0,0,90]) { little_box(); }
-			}
-		}
-
-	}
-	
 
 
 }
@@ -523,6 +518,35 @@ module part3() {
 	}
 
 
+	// add parts that connet to part 2.
+	// WORKING
+
+	translate([+2.6,0,-55]) {
+
+	rotate([-180,-90,0]) {
+		rotate_extrude(angle = arm_angle,convexity = 2) {
+			translate([55 + pipe_y, (outer_radius * -1) + 5, 0]) {
+				rotate([0,0,90]) { wall(); }
+			}
+		}
+	}
+
+	}
+
+	
+	translate([+34.8,0,-55]) {
+
+	rotate([-180,-90,0]) {
+		rotate_extrude(angle = arm_angle,convexity = 2) {
+			translate([55 + pipe_y, (outer_radius * -1) + 5, 0]) {
+				rotate([0,0,90]) { wall(); }
+			}
+		}
+	}
+
+	}
+
+
 }
 
 
@@ -603,7 +627,7 @@ module part_blue() {
 module part_black() {
 
 translate([0,0,0]) {
-	color("grey") { part3(); };
+	color("black") { part3(); };
 }
 
 }
@@ -614,7 +638,7 @@ printable = 1;
 if (printable == 1) {
 	//rotate([0,180,0]) { part1a(); }
 	//rotate([0,180,0]) { part1b(); }
-	part2a();
+ 	part2a();
 	// part2b();
 	//rotate([25,0,0]) { part3a(); }
 	//rotate([25,0,0]) { part3b(); }
@@ -627,9 +651,12 @@ else {
 }
 
 
+// part_black();
+
 // part1();
+//intersection() {
 // part2();
 // part3();
-
+//}
 
 //whole();

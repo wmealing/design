@@ -650,8 +650,8 @@ printable = 1;
 if (printable == 1) {
 	//rotate([0,180,0]) { part1a(); }
 	//rotate([0,180,0]) { part1b(); }
-	part2a();
-	// part2b();
+	// part2a();
+	part2b();
 	//rotate([25,0,0]) { part3a(); }
 	//rotate([25,0,0]) { part3b(); }
 

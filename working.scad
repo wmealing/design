@@ -81,34 +81,6 @@ module little_box() {
 
 }
 
-module half_connector_v1() {
-
-	difference() { 
-		#cube(size=[connection_depth,connection_width,connection_height]);
-		cylinder(r=2.5, h=connection_depth + 8);
-
-		// offset to middle of cube
-		translate([connection_width / 2.0 - connection_width + 5,
-					connection_width / 2.0,
-					0]) {
-	
-			translate([2,5,connection_height / 2.0]) {
-				rotate([0,90,0]) {
-					cylinder(r=2.5, h=22);
-				}
-			}
-
-			translate([2,-5,connection_height / 2.0]) {
-				rotate([0,90,0]) {
-					// #WOT 
-					cylinder(r=2.5, h=connection_depth + 8);
-				}
-			}
-
-		}
-
-	}
-}
 
 module half_connector_v2() {
 
@@ -126,7 +98,7 @@ module half_connector_v2() {
 		translate([-1,connection_height - 2,0]) {
 
 			rotate([0,90,0]) {
-				#cylinder(r=2.5,h=connection_width + 2);
+				cylinder(r=2.5,h=connection_width + 2);
 			}
 
 		}
@@ -173,12 +145,6 @@ rotate([90,270,90]) {
 		}
 	}
 
-	rotate_extrude(angle = arm_angle,convexity = 2) {
-		translate([30 + pipe_y, 0, 0]) {
-			//rotate([0,0,1220]) { square(size = [20, 20]); }
-		}
-	}
-
 	rotate([0,90, (90 - arm_angle) * -1]) {
  
 		translate([-pipe_x,55,-arm_length +1]) {
@@ -193,7 +159,7 @@ rotate([90,270,90]) {
 	// end cap on the arm.
 	rotate([0,90, (90 - arm_angle) * -1]) {	
 			translate([-pipe_x,55,-arm_length - 2]) {
-			linear_extrude(height = 2.6, center = false, convexity = 10, twist = 0) {
+			#linear_extrude(height = 2.6, center = false, convexity = 10, twist = 0) {
 								outer_basic();
 			}
 		}
@@ -201,9 +167,9 @@ rotate([90,270,90]) {
 
 
 	/* Connecting part between 2 and 3 */
-	rotate([0,0,47]) {
-		rotate_extrude(angle = 20) {
-			translate([91, (pipe_x / 2.0) - curve_edge, 0]) {
+	rotate([0,0,12]) {
+		rotate_extrude(angle = 35) {
+			translate([67, (pipe_x / 2.0) - curve_edge , 0]) {
 				rotate([0,0,90]) { little_box(); }
 			}
 		}
@@ -245,7 +211,6 @@ module neck() {
 }
 
 module neck_with_insets() {
-
 
 	difference() {
 
@@ -510,7 +475,7 @@ module part2a() {
 
 		// WORKING collar_radius
 		translate([0,(total_curve_radius - 30) * -1,-10]) { 
-			#cube(size=[total_curve_radius + error,
+			cube(size=[total_curve_radius + error,
 						 total_curve_radius* 2,30]);
 		}
 	}
@@ -524,7 +489,6 @@ module part2b() {
 	difference() {
 		part2();
 
-		// WORKING collar_radius
 		translate([total_curve_radius * -1 - error ,(total_curve_radius / 2) * -1,-10]) { 
 			cube(size=[total_curve_radius + error,
 						 total_curve_radius* 2, 30]);
@@ -650,8 +614,8 @@ printable = 1;
 if (printable == 1) {
 	//rotate([0,180,0]) { part1a(); }
 	//rotate([0,180,0]) { part1b(); }
-	// part2a();
-	part2b();
+	part2a();
+	// part2b();
 	//rotate([25,0,0]) { part3a(); }
 	//rotate([25,0,0]) { part3b(); }
 
